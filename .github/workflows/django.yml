@@ -12,7 +12,7 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v
+      uses: actions/checkout@v2
 
     - name: Set up Python
       uses: actions/setup-python@v2
@@ -28,6 +28,7 @@ jobs:
       run: |
         pip install flake8
         flake8 . > flake8_errors.txt || true
+        cat flake8_errors.txt
     - name: Notify Slack about Linting Errors
       if: failure() # Notify only if linting fails
       run: |
