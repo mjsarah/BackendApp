@@ -1,4 +1,4 @@
-name: ciTest
+name: ciTestd
 
 on:
   push:
