@@ -12,7 +12,7 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v
+      uses: actions/checkout@v2
 
     - name: Set up Python
       uses: actions/setup-python@v2
@@ -23,11 +23,19 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
+
     - name: Lint code
       id: lint
       run: |
         pip install flake8
         flake8 . > flake8_errors.txt || true
+
+    - name: Test Slack Notification
+      run: |
+        curl -X POST -H 'Content-type: application/json' \
+        --data '{"text":"This is a test message from GitHub Actions"}' \
+        ${{ secrets.SLACK_WEBHOOK_URL }}
+
     - name: Notify Slack about Linting Errors
       if: failure() # Notify only if linting fails
       run: |
@@ -35,11 +43,13 @@ jobs:
         curl -X POST -H 'Content-type: application/json' \
         --data "{\"text\":\"Linting completed with errors: \n${lint_errors}\"}" \
         ${{ secrets.SLACK_WEBHOOK_URL }}
+
     - name: Run tests
       id: test
       run: |
         pip install pytest
         pytest > pytest_output.txt || true
+
     - name: Notify Slack about Testing Errors
       if: failure() # Notify only if testing fails
       run: |
@@ -47,6 +57,7 @@ jobs:
         curl -X POST -H 'Content-type: application/json' \
         --data "{\"text\":\"Testing completed with errors: \n${test_errors}\"}" \
         ${{ secrets.SLACK_WEBHOOK_URL }}
+
     - name: Login to Docker Hub
       uses: docker/login-action@v2
       with:
@@ -58,4 +69,4 @@ jobs:
       with:
         context: .
         push: true
-        tags: sarra247/backend:latest
+        tags: sarra247/test:latest
